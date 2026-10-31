@@ -3,15 +3,11 @@ import { Task } from './task.model';
 
 export interface AssignmentSummary {
   id: number;
-  persona_id: number;
-  persona_nombre: string;
-  persona_email?: string;
-  workspace_id: number;
-  workspace_nombre: string;
-  rol: AssignmentRole;
+  user: { id: number; name: string };
+  workspace: { id: number; name: string; type: string };
+  role: AssignmentRole;
   contracted_hours: number;
   reported_hours: number;
-  report_status: 'REPORTED' | 'NO_REPORT';
 }
 
 export interface AssignmentsResponse {

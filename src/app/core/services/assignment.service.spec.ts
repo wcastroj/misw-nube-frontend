@@ -36,15 +36,11 @@ describe('AssignmentService', () => {
       assignments: [
         {
           id: 101,
-          persona_id: 12,
-          persona_nombre: 'Juan Monitor',
-          persona_email: 'juan@uniandes.edu.co',
-          workspace_id: 5,
-          workspace_nombre: 'MISW4204',
-          rol: 'MONITOR',
+          user: { id: 12, name: 'Juan Monitor' },
+          workspace: { id: 5, name: 'MISW4204', type: 'COURSE' },
+          role: 'MONITOR',
           contracted_hours: 10,
-          reported_hours: 8,
-          report_status: 'REPORTED'
+          reported_hours: 8
         }
       ]
     };
