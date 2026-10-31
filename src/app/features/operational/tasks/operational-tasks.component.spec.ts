@@ -1,0 +1,164 @@
+import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { of } from 'rxjs';
+import { ActivatedRoute, provideRouter } from '@angular/router';
+import { ReactiveFormsModule } from '@angular/forms';
+import { ToastrService } from 'ngx-toastr';
+import { OperationalTasksComponent } from './operational-tasks.component';
+import { TaskService } from '../../../core/services/task.service';
+import { WorkspaceService } from '../../../core/services/workspace.service';
+import { Task } from '../../../core/models/task.model';
+import { OperationalWorkspace } from '../../../core/models/workspace.model';
+import { By } from '@angular/platform-browser';
+
+describe('OperationalTasksComponent', () => {
+  let component: OperationalTasksComponent;
+  let fixture: ComponentFixture<OperationalTasksComponent>;
+  let taskServiceSpy: jasmine.SpyObj<TaskService>;
+  let workspaceServiceSpy: jasmine.SpyObj<WorkspaceService>;
+  let toastrSpy: jasmine.SpyObj<ToastrService>;
+
+  const mockWorkspace: OperationalWorkspace = {
+    assignment_id: 10,
+    workspace_id: 101,
+    workspace_nombre: 'Desarrollo en la Nube',
+    tipo: 'CURSO',
+    profesor_nombre: 'Profesor Carlos',
+    rol: 'MONITOR',
+    horas_semanales: 10,
+    estado: 'ACTIVO'
+  };
+
+  const mockTasks: Task[] = [
+    {
+      id: 1,
+      assignment_id: 10,
+      week: '2026-W42',
+      title: 'Tarea Activa Editable',
+      description: 'Descripción de prueba',
+      status: 'FINALIZADA',
+      hours_spent: 4,
+      is_late_report: false
+    },
+    {
+      id: 2,
+      assignment_id: 10,
+      week: '2026-W41',
+      title: 'Tarea Tardía Inmutable',
+      description: 'Reportada a destiempo',
+      status: 'FINALIZADA',
+      hours_spent: 3,
+      is_late_report: true
+    }
+  ];
+
+  beforeEach(async () => {
+    taskServiceSpy = jasmine.createSpyObj('TaskService', [
+      'getTasks',
+      'createTask',
+      'updateTask',
+      'deleteTask'
+    ]);
+    workspaceServiceSpy = jasmine.createSpyObj('WorkspaceService', ['getMyWorkspaces']);
+    toastrSpy = jasmine.createSpyObj('ToastrService', ['success', 'error', 'warning']);
+
+    taskServiceSpy.getTasks.and.returnValue(of(mockTasks));
+    taskServiceSpy.createTask.and.returnValue(of(mockTasks[0]));
+    taskServiceSpy.updateTask.and.returnValue(of(mockTasks[0]));
+    taskServiceSpy.deleteTask.and.returnValue(of(undefined));
+    workspaceServiceSpy.getMyWorkspaces.and.returnValue(of([mockWorkspace]));
+
+    await TestBed.configureTestingModule({
+      imports: [OperationalTasksComponent, ReactiveFormsModule],
+      providers: [
+        provideRouter([]),
+        {
+          provide: ActivatedRoute,
+          useValue: {
+            snapshot: {
+              paramMap: {
+                get: (key: string) => (key === 'assignmentId' ? '10' : null)
+              }
+            }
+          }
+        },
+        { provide: TaskService, useValue: taskServiceSpy },
+        { provide: WorkspaceService, useValue: workspaceServiceSpy },
+        { provide: ToastrService, useValue: toastrSpy }
+      ]
+    }).compileComponents();
+
+    fixture = TestBed.createComponent(OperationalTasksComponent);
+    component = fixture.componentInstance;
+    component.currentIsoWeek = '2026-W42';
+    fixture.detectChanges();
+  });
+
+  it('should create and load tasks and workspace info', () => {
+    expect(component).toBeTruthy();
+    expect(taskServiceSpy.getTasks).toHaveBeenCalledWith(10, '2026-W42');
+    expect(component.workspace?.workspace_nombre).toBe('Desarrollo en la Nube');
+  });
+
+  it('should invalidate hours_spent when 0, negative, or decimal (EARS-11.7)', () => {
+    const hoursControl = component.taskForm.get('hours_spent');
+
+    hoursControl?.setValue('0');
+    expect(hoursControl?.valid).toBeFalse();
+
+    hoursControl?.setValue('-3');
+    expect(hoursControl?.valid).toBeFalse();
+
+    hoursControl?.setValue('2.5');
+    expect(hoursControl?.valid).toBeFalse();
+
+    hoursControl?.setValue('4');
+    expect(hoursControl?.valid).toBeTrue();
+  });
+
+  it('should activate late report warning when selecting a past week in the form (EARS-11.4)', () => {
+    component.currentIsoWeek = '2026-W42';
+    component.taskForm.get('week')?.setValue('2026-W41');
+    fixture.detectChanges();
+
+    expect(component.isLateReportWarning).toBeTrue();
+    const warningEl = fixture.debugElement.query(By.css('.alert-warning-late'));
+    expect(warningEl).toBeTruthy();
+    expect(warningEl.nativeElement.textContent).toContain('Reporte Tardío');
+  });
+
+  it('should create task and show toastr.success upon valid form submission (EARS-11.5)', () => {
+    component.taskForm.setValue({
+      week: '2026-W42',
+      title: 'Nueva Tarea Calificada',
+      description: 'Detalle de la tarea',
+      status: 'FINALIZADA',
+      hours_spent: 5,
+      observations: 'Comentarios adicionales'
+    });
+
+    component.submitTask();
+
+    expect(taskServiceSpy.createTask).toHaveBeenCalled();
+    expect(toastrSpy.success).toHaveBeenCalledWith('Tarea registrada exitosamente.');
+  });
+
+  it('should allow edit and delete only for current week, active workspace and non-late tasks (EARS-12.1, EARS-12.2)', () => {
+    // Task 1: week === '2026-W42', is_late_report === false, workspace is ACTIVO -> editable & deletable
+    expect(component.canModifyTask(mockTasks[0])).toBeTrue();
+
+    // Task 2: is_late_report === true -> inmutable
+    expect(component.canModifyTask(mockTasks[1])).toBeFalse();
+  });
+
+  it('should disallow edit and delete when workspace is CERRADO', () => {
+    component.workspace = { ...mockWorkspace, estado: 'CERRADO' };
+    expect(component.canModifyTask(mockTasks[0])).toBeFalse();
+  });
+
+  it('should delete task after user confirms and show toastr.success (EARS-12.3, EARS-12.4)', () => {
+    component.confirmDelete(mockTasks[0]);
+
+    expect(taskServiceSpy.deleteTask).toHaveBeenCalledWith(1);
+    expect(toastrSpy.success).toHaveBeenCalledWith('Tarea eliminada exitosamente.');
+  });
+});

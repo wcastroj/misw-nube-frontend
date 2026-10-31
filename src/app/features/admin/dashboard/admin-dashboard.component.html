@@ -1,0 +1,38 @@
+<div class="container py-4">
+  <div class="row justify-content-center">
+    <div class="col-12 col-md-8 col-lg-6">
+      <div class="card shadow-sm border-0">
+        <div class="card-header bg-white border-bottom py-3">
+          <div class="d-flex align-items-center">
+            <i class="bi bi-shield-check text-primary fs-4 me-2"></i>
+            <h5 class="card-title fw-bold text-dark mb-0">Panel de Administrador</h5>
+          </div>
+        </div>
+        <div class="card-body p-4" *ngIf="currentUser">
+          <div class="text-center mb-4">
+            <div class="avatar-circle bg-light text-primary mx-auto mb-2 d-flex align-items-center justify-content-center rounded-circle" style="width: 70px; height: 70px;">
+              <i class="bi bi-person-fill fs-2"></i>
+            </div>
+            <h4 class="fw-bold mb-1">{{ currentUser.nombre }}</h4>
+            <span class="badge bg-primary">Administrador</span>
+          </div>
+
+          <div class="list-group list-group-flush border rounded-3">
+            <div class="list-group-item d-flex justify-content-between align-items-center py-3">
+              <span class="text-muted"><i class="bi bi-envelope me-2"></i>Correo Institucional</span>
+              <span class="fw-semibold">{{ currentUser.email }}</span>
+            </div>
+            <div class="list-group-item d-flex justify-content-between align-items-center py-3">
+              <span class="text-muted"><i class="bi bi-person-badge me-2"></i>Rol en el Sistema</span>
+              <span class="fw-semibold">Administrador</span>
+            </div>
+            <div class="list-group-item d-flex justify-content-between align-items-center py-3">
+              <span class="text-muted"><i class="bi bi-activity me-2"></i>Estado de la Sesión</span>
+              <span class="badge bg-success">Activa</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

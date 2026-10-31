@@ -1,0 +1,57 @@
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-12 col-md-6 col-lg-5">
+      <div class="card shadow-sm border-0">
+        <div class="card-body p-4 p-md-5">
+          <div class="text-center mb-4">
+            <div class="text-primary mb-2">
+              <i class="bi bi-mortarboard-fill display-4"></i>
+            </div>
+            <h3 class="fw-bold text-dark">Iniciar Sesión</h3>
+            <p class="text-muted small">Sistema de Gestión y Reporte de Actividades</p>
+          </div>
+
+          <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" novalidate>
+            <div class="mb-3">
+              <label for="email" class="form-label fw-semibold">Correo Electrónico</label>
+              <input
+                type="email"
+                id="email"
+                class="form-control"
+                [class.is-invalid]="loginForm.get('email')?.invalid && loginForm.get('email')?.touched"
+                formControlName="email"
+                placeholder="ejemplo@uniandes.edu.co"
+              />
+              <div class="invalid-feedback" *ngIf="loginForm.get('email')?.errors?.['required']">
+                El correo electrónico es obligatorio.
+              </div>
+              <div class="invalid-feedback" *ngIf="loginForm.get('email')?.errors?.['email']">
+                Ingresa una dirección de correo válida.
+              </div>
+            </div>
+
+            <div class="mb-4">
+              <label for="password" class="form-label fw-semibold">Contraseña</label>
+              <input
+                type="password"
+                id="password"
+                class="form-control"
+                [class.is-invalid]="loginForm.get('password')?.invalid && loginForm.get('password')?.touched"
+                formControlName="password"
+                placeholder="••••••••"
+              />
+              <div class="invalid-feedback" *ngIf="loginForm.get('password')?.errors?.['required']">
+                La contraseña es obligatoria.
+              </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary w-100 py-2 fw-semibold">
+              <i class="bi bi-box-arrow-in-right me-1"></i>
+              Ingresar al Sistema
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

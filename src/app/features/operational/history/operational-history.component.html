@@ -1,0 +1,139 @@
+<div class="container py-4">
+  <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2">
+    <div>
+      <div class="d-flex align-items-center gap-2 mb-1">
+        <a routerLink="/operational/workspaces" class="btn btn-sm btn-outline-secondary">
+          <i class="bi bi-arrow-left"></i> Volver a Mis Cursos
+        </a>
+        <h2 class="fw-bold text-dark mb-0">Historial Semanal de Actividades</h2>
+      </div>
+      <p class="text-muted mb-0">
+        Registro cronológico de horas reportadas y tareas ejecutadas semana a semana.
+      </p>
+    </div>
+  </div>
+
+  <div class="card shadow-sm border-0" *ngIf="historyWeeks.length > 0; else noHistory">
+    <div class="card-header bg-white border-bottom py-3">
+      <h5 class="fw-bold text-dark mb-0">Relación Histórica por Semana</h5>
+    </div>
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+          <thead class="table-light">
+            <tr>
+              <th scope="col" class="ps-4">Semana</th>
+              <th scope="col" class="text-center">Total Horas</th>
+              <th scope="col" class="text-center">Tareas</th>
+              <th scope="col" class="text-center">Estado del Reporte</th>
+              <th scope="col" class="text-center">Indicadores</th>
+              <th scope="col" class="text-end pe-4">Detalle</th>
+            </tr>
+          </thead>
+          <tbody>
+            <ng-container *ngFor="let h of historyWeeks">
+              <tr
+                class="history-week-row"
+                [class.table-active]="expandedWeek === h.week"
+                style="cursor: pointer;"
+                (click)="toggleWeek(h.week)"
+              >
+                <td class="ps-4 fw-semibold text-dark">
+                  <i
+                    class="bi me-2 text-primary"
+                    [ngClass]="expandedWeek === h.week ? 'bi-chevron-down' : 'bi-chevron-right'"
+                  ></i>
+                  {{ h.week | isoWeek }}
+                </td>
+                <td class="text-center fw-bold">{{ h.total_hours }} h</td>
+                <td class="text-center">
+                  <span class="badge bg-light text-dark border">{{ h.task_count }}</span>
+                </td>
+                <td class="text-center">
+                  <span
+                    class="badge"
+                    [ngClass]="h.status === 'REPORTED' ? 'bg-success' : 'bg-danger'"
+                  >
+                    {{ h.status === 'REPORTED' ? 'Reportado' : 'Sin reporte' }}
+                  </span>
+                </td>
+                <td class="text-center">
+                  <span *ngIf="h.has_late_reports" class="badge bg-warning text-dark">
+                    <i class="bi bi-clock-history me-1"></i>Reportes tardíos
+                  </span>
+                  <span *ngIf="!h.has_late_reports && h.status === 'REPORTED'" class="text-muted small">
+                    A tiempo
+                  </span>
+                </td>
+                <td class="text-end pe-4">
+                  <button type="button" class="btn btn-sm btn-outline-primary">
+                    {{ expandedWeek === h.week ? 'Ocultar' : 'Ver Tareas' }}
+                  </button>
+                </td>
+              </tr>
+
+              <!-- Fila Expandible con Detalle de Tareas de la Semana -->
+              <tr *ngIf="expandedWeek === h.week">
+                <td colspan="6" class="p-0 bg-light">
+                  <div class="p-3 border-top border-bottom">
+                    <div *ngIf="expandedTasks.length > 0; else noExpandedTasks">
+                      <h6 class="fw-bold text-dark mb-2">Tareas de {{ h.week | isoWeek }}:</h6>
+                      <div class="table-responsive bg-white rounded border">
+                        <table class="table table-sm table-borderless mb-0">
+                          <thead class="table-light border-bottom">
+                            <tr>
+                              <th class="ps-3">Título y Descripción</th>
+                              <th class="text-center">Horas</th>
+                              <th class="text-center">Estado</th>
+                              <th>Observaciones</th>
+                              <th class="text-center pe-3">Tipo</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            <tr *ngFor="let t of expandedTasks" class="border-bottom">
+                              <td class="ps-3">
+                                <strong>{{ t.title }}</strong>
+                                <div class="text-muted small">{{ t.description }}</div>
+                              </td>
+                              <td class="text-center fw-bold">{{ t.hours_spent }} h</td>
+                              <td class="text-center">
+                                <span
+                                  class="badge"
+                                  [ngClass]="t.status === 'FINALIZADA' ? 'bg-success' : 'bg-warning text-dark'"
+                                >
+                                  {{ t.status === 'FINALIZADA' ? 'Finalizada' : 'Pendiente' }}
+                                </span>
+                              </td>
+                              <td class="text-muted small">{{ t.observations || 'Sin observaciones' }}</td>
+                              <td class="text-center pe-3">
+                                <span *ngIf="t.is_late_report" class="badge bg-warning text-dark">Tardío</span>
+                                <span *ngIf="!t.is_late_report" class="badge bg-light text-muted border">A tiempo</span>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                    <ng-template #noExpandedTasks>
+                      <div class="text-muted text-center py-2">
+                        No hay tareas individuales registradas para esta semana.
+                      </div>
+                    </ng-template>
+                  </div>
+                </td>
+              </tr>
+            </ng-container>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <ng-template #noHistory>
+    <app-empty-state
+      title="Sin historial registrado"
+      message="No se encontraron registros de semanas anteriores para esta vinculación."
+      iconClass="bi-clock-history"
+    ></app-empty-state>
+  </ng-template>
+</div>

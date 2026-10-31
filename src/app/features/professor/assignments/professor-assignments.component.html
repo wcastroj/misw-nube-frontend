@@ -1,0 +1,89 @@
+<div class="container py-4">
+  <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2">
+    <div>
+      <h2 class="fw-bold text-dark mb-1">Supervisión de Equipo de Apoyo</h2>
+      <p class="text-muted mb-0" *ngIf="currentWeek">
+        Semana Activa: <span class="badge bg-primary fs-6">{{ currentWeek | isoWeek }}</span>
+      </p>
+    </div>
+    <div>
+      <a routerLink="/professor/reports" class="btn btn-outline-primary">
+        <i class="bi bi-file-earmark-pdf me-1"></i>
+        Módulo de Reportes
+      </a>
+    </div>
+  </div>
+
+  <div class="card shadow-sm border-0" *ngIf="assignments.length > 0; else noAssignments">
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+          <thead class="table-light">
+            <tr>
+              <th scope="col" class="ps-4">Persona</th>
+              <th scope="col">Curso / Proyecto</th>
+              <th scope="col">Rol</th>
+              <th scope="col" class="text-center">Horas Semanales</th>
+              <th scope="col" class="text-center">Estado del Reporte</th>
+              <th scope="col" class="text-end pe-4">Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let item of assignments">
+              <td class="ps-4">
+                <div class="fw-semibold text-dark">{{ item.persona_nombre }}</div>
+                <small class="text-muted" *ngIf="item.persona_email">{{ item.persona_email }}</small>
+              </td>
+              <td>
+                <span class="fw-medium">{{ item.workspace_nombre }}</span>
+              </td>
+              <td>
+                <span class="badge bg-light text-dark border">
+                  {{ getRoleLabel(item.rol) }}
+                </span>
+              </td>
+              <td class="text-center">
+                <span class="fw-bold">{{ item.reported_hours }}</span>
+                <span class="text-muted"> / {{ item.contracted_hours }} h</span>
+              </td>
+              <td class="text-center">
+                <span
+                  class="badge"
+                  [ngClass]="item.report_status === 'REPORTED' ? 'bg-success' : 'bg-danger'"
+                >
+                  {{ item.report_status === 'REPORTED' ? 'Reportado' : 'Sin reporte' }}
+                </span>
+              </td>
+              <td class="text-end pe-4">
+                <div class="btn-group btn-group-sm">
+                  <a
+                    [routerLink]="['/professor/assignments', item.id, 'weekly']"
+                    class="btn btn-outline-primary"
+                    title="Ver detalle semanal"
+                  >
+                    <i class="bi bi-calendar-week me-1"></i> Detalle Semanal
+                  </a>
+                  <a
+                    [routerLink]="['/professor/assignments', item.id, 'consolidated']"
+                    class="btn btn-outline-secondary"
+                    title="Ver histórico acumulado"
+                  >
+                    <i class="bi bi-clock-history me-1"></i> Histórico
+                  </a>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <ng-template #noAssignments>
+    <app-empty-state
+      title="Sin vinculaciones"
+      message="No cuentas con monitores o asistentes vinculados a tus espacios académicos en el período actual."
+      iconClass="bi-people"
+    ></app-empty-state>
+  </ng-template>
+</div>

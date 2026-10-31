@@ -1,0 +1,120 @@
+<div class="container py-4" *ngIf="weeklyDetail">
+  <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2">
+    <div>
+      <div class="d-flex align-items-center gap-2 mb-1">
+        <a routerLink="/professor/assignments" class="btn btn-sm btn-outline-secondary">
+          <i class="bi bi-arrow-left"></i> Volver
+        </a>
+        <h2 class="fw-bold text-dark mb-0">Detalle Semanal de Actividades</h2>
+      </div>
+      <p class="text-muted mb-0">
+        {{ weeklyDetail.persona_nombre }} &bull; {{ weeklyDetail.workspace_nombre }}
+      </p>
+    </div>
+
+    <div class="d-flex align-items-center gap-2">
+      <label for="weekSelector" class="form-label mb-0 fw-semibold text-nowrap">Semana:</label>
+      <input
+        type="text"
+        id="weekSelector"
+        class="form-control form-control-sm"
+        style="width: 140px;"
+        placeholder="YYYY-Www"
+        [ngModel]="selectedWeek"
+        (ngModelChange)="onWeekChange($event)"
+      />
+    </div>
+  </div>
+
+  <!-- Balance de Horas Card -->
+  <div class="card shadow-sm border-0 mb-4">
+    <div class="card-body p-4">
+      <div class="row align-items-center g-3">
+        <div class="col-12 col-md-4 text-center text-md-start border-end-md">
+          <span class="text-muted small d-block">Semana Consultada</span>
+          <span class="fs-5 fw-bold text-dark">{{ weeklyDetail.week | isoWeek }}</span>
+        </div>
+        <div class="col-12 col-md-4 text-center border-end-md">
+          <span class="text-muted small d-block">Balance Semanal</span>
+          <span class="fs-4 fw-bold text-dark">{{ weeklyDetail.reported_hours }}</span>
+          <span class="text-muted"> / {{ weeklyDetail.contracted_hours }} h</span>
+        </div>
+        <div class="col-12 col-md-4 text-center text-md-end">
+          <div class="d-flex flex-column align-items-center align-items-md-end gap-1">
+            <span
+              class="badge fs-6"
+              [ngClass]="weeklyDetail.report_status === 'REPORTED' ? 'bg-success' : 'bg-danger'"
+            >
+              {{ weeklyDetail.report_status === 'REPORTED' ? 'Reportado' : 'Sin reporte' }}
+            </span>
+            <span
+              *ngIf="weeklyDetail.reported_hours > weeklyDetail.contracted_hours"
+              class="badge bg-warning text-dark mt-1"
+            >
+              <i class="bi bi-exclamation-triangle-fill me-1"></i>
+              Sobrecumplimiento: +{{ weeklyDetail.reported_hours - weeklyDetail.contracted_hours }} h
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Listado de Tareas -->
+  <div class="card shadow-sm border-0" *ngIf="weeklyDetail.tasks && weeklyDetail.tasks.length > 0; else noTasks">
+    <div class="card-header bg-white border-bottom py-3">
+      <h5 class="fw-bold text-dark mb-0">Tareas Desarrolladas en la Semana</h5>
+    </div>
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+          <thead class="table-light">
+            <tr>
+              <th scope="col" class="ps-4">Título y Descripción</th>
+              <th scope="col" class="text-center">Horas</th>
+              <th scope="col" class="text-center">Estado</th>
+              <th scope="col">Observaciones</th>
+              <th scope="col" class="text-center pe-4">Tipo de Reporte</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let task of weeklyDetail.tasks">
+              <td class="ps-4">
+                <div class="fw-semibold text-dark">{{ task.title }}</div>
+                <small class="text-muted">{{ task.description }}</small>
+              </td>
+              <td class="text-center fw-bold">{{ task.hours_spent }} h</td>
+              <td class="text-center">
+                <span
+                  class="badge"
+                  [ngClass]="task.status === 'FINALIZADA' ? 'bg-success' : 'bg-warning text-dark'"
+                >
+                  {{ task.status === 'FINALIZADA' ? 'Finalizada' : 'Pendiente' }}
+                </span>
+              </td>
+              <td>
+                <small class="text-muted">{{ task.observations || 'Sin observaciones' }}</small>
+              </td>
+              <td class="text-center pe-4">
+                <span *ngIf="task.is_late_report" class="badge bg-warning text-dark badge-late">
+                  <i class="bi bi-clock-history me-1"></i>Tardío
+                </span>
+                <span *ngIf="!task.is_late_report" class="badge bg-light text-muted border">
+                  A tiempo
+                </span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <ng-template #noTasks>
+    <app-empty-state
+      title="Sin tareas registradas"
+      message="No se encontraron tareas reportadas para la semana seleccionada."
+      iconClass="bi-journal-x"
+    ></app-empty-state>
+  </ng-template>
+</div>

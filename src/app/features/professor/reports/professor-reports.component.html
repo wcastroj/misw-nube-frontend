@@ -1,0 +1,112 @@
+<div class="container py-4">
+  <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2">
+    <div>
+      <div class="d-flex align-items-center gap-2 mb-1">
+        <a routerLink="/professor/assignments" class="btn btn-sm btn-outline-secondary">
+          <i class="bi bi-arrow-left"></i> Volver a Vinculaciones
+        </a>
+        <h2 class="fw-bold text-dark mb-0">Generación y Descarga de Reportes</h2>
+      </div>
+      <p class="text-muted mb-0">
+        Generación automatizada de reportes semanales en formato PDF para semanas concluidas.
+      </p>
+    </div>
+  </div>
+
+  <!-- Controles de Semana y Generación -->
+  <div class="card shadow-sm border-0 mb-4">
+    <div class="card-body p-4">
+      <div class="row align-items-end g-3">
+        <div class="col-12 col-md-5">
+          <label for="weekSelect" class="form-label fw-semibold">Seleccionar Semana Concluida</label>
+          <select
+            id="weekSelect"
+            class="form-select"
+            [ngModel]="selectedWeek"
+            (ngModelChange)="onWeekSelect($event)"
+          >
+            <option *ngFor="let w of closedWeeks" [value]="w">
+              {{ w | isoWeek }} ({{ w }})
+            </option>
+          </select>
+          <div class="form-text text-muted">Solo se permite generar reportes para semanas pasadas (cerradas).</div>
+        </div>
+
+        <div class="col-12 col-md-7 d-flex flex-wrap gap-2 justify-content-md-end">
+          <button
+            type="button"
+            class="btn btn-primary btn-generate-batch d-flex align-items-center"
+            [disabled]="!isClosedWeek(selectedWeek)"
+            (click)="triggerBatch()"
+          >
+            <i class="bi bi-gear-fill me-1"></i>
+            Generar Reportes por Lote
+          </button>
+
+          <button
+            type="button"
+            class="btn btn-outline-success btn-download-zip d-flex align-items-center"
+            *ngIf="reports.length > 0 && activeBatchId"
+            (click)="downloadZip()"
+          >
+            <i class="bi bi-file-earmark-zip me-1"></i>
+            Descargar Lote (ZIP)
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Listado de Reportes Disponibles -->
+  <div class="card shadow-sm border-0" *ngIf="reports.length > 0; else noReports">
+    <div class="card-header bg-white border-bottom py-3">
+      <h5 class="fw-bold text-dark mb-0">Reportes Generados &bull; {{ selectedWeek | isoWeek }}</h5>
+    </div>
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+          <thead class="table-light">
+            <tr>
+              <th scope="col" class="ps-4">Estudiante</th>
+              <th scope="col" class="text-center">Semana</th>
+              <th scope="col" class="text-center">Estado</th>
+              <th scope="col" class="text-end pe-4">Descarga</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let report of reports">
+              <td class="ps-4 fw-semibold text-dark">
+                {{ report.person_name }}
+              </td>
+              <td class="text-center">
+                {{ report.week | isoWeek }}
+              </td>
+              <td class="text-center">
+                <span class="badge bg-success">
+                  {{ report.status }}
+                </span>
+              </td>
+              <td class="text-end pe-4">
+                <button
+                  type="button"
+                  class="btn btn-sm btn-outline-primary btn-download-pdf"
+                  (click)="downloadPdf(report.id, report.person_name)"
+                >
+                  <i class="bi bi-file-earmark-arrow-down me-1"></i> Descargar PDF
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <ng-template #noReports>
+    <app-empty-state
+      title="Sin reportes generados"
+      message="No se han encontrado reportes para la semana seleccionada. Pulsa 'Generar Reportes por Lote' para procesarlos."
+      iconClass="bi-file-earmark-text"
+    ></app-empty-state>
+  </ng-template>
+</div>

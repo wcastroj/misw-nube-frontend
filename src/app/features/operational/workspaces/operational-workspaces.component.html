@@ -1,0 +1,83 @@
+<div class="container py-4">
+  <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2">
+    <div>
+      <h2 class="fw-bold text-dark mb-1">Mis Cursos y Proyectos Asignados</h2>
+      <p class="text-muted mb-0">
+        Espacios académicos vinculados para el reporte de horas y actividades.
+      </p>
+    </div>
+  </div>
+
+  <div class="card shadow-sm border-0" *ngIf="workspaces.length > 0; else noWorkspaces">
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+          <thead class="table-light">
+            <tr>
+              <th scope="col" class="ps-4">Curso / Proyecto</th>
+              <th scope="col">Docente Responsable</th>
+              <th scope="col">Rol</th>
+              <th scope="col" class="text-center">Horas Semanales</th>
+              <th scope="col" class="text-center">Estado</th>
+              <th scope="col" class="text-end pe-4">Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let ws of workspaces">
+              <td class="ps-4">
+                <div class="fw-semibold text-dark">{{ ws.workspace_nombre }}</div>
+                <small class="badge bg-light text-muted border" *ngIf="ws.tipo">{{ ws.tipo }}</small>
+              </td>
+              <td>
+                <div class="text-dark">{{ ws.profesor_nombre }}</div>
+                <small class="text-muted" *ngIf="ws.profesor_email">{{ ws.profesor_email }}</small>
+              </td>
+              <td>
+                <span class="badge bg-light text-dark border">
+                  {{ getRoleLabel(ws.rol) }}
+                </span>
+              </td>
+              <td class="text-center fw-bold">
+                {{ ws.horas_semanales }} h
+              </td>
+              <td class="text-center">
+                <span
+                  class="badge"
+                  [ngClass]="ws.estado === 'ACTIVO' ? 'bg-success' : 'bg-secondary'"
+                >
+                  {{ ws.estado === 'ACTIVO' ? 'Activo' : 'Cerrado' }}
+                </span>
+              </td>
+              <td class="text-end pe-4">
+                <div class="btn-group btn-group-sm">
+                  <a
+                    [routerLink]="['/operational/workspaces', ws.assignment_id, 'tasks']"
+                    class="btn btn-outline-primary"
+                    title="Gestionar tareas"
+                  >
+                    <i class="bi bi-list-check me-1"></i> Gestionar Tareas
+                  </a>
+                  <a
+                    [routerLink]="['/operational/workspaces', ws.assignment_id, 'history']"
+                    class="btn btn-outline-secondary"
+                    title="Historial de registros"
+                  >
+                    <i class="bi bi-clock-history me-1"></i> Historial
+                  </a>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <ng-template #noWorkspaces>
+    <app-empty-state
+      title="Sin asignaciones"
+      message="No tienes cursos ni proyectos asignados en el período actual."
+      iconClass="bi-journal-x"
+    ></app-empty-state>
+  </ng-template>
+</div>

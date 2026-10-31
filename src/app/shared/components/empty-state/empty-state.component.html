@@ -1,0 +1,13 @@
+<div class="card shadow-sm border-0 text-center py-5 my-3">
+  <div class="card-body">
+    <div class="mb-3 text-secondary">
+      <i class="bi fs-1" [ngClass]="iconClass"></i>
+    </div>
+    <h5 class="card-title fw-semibold text-dark empty-state-title" *ngIf="title">
+      {{ title }}
+    </h5>
+    <p class="card-text text-muted mx-auto empty-state-message" style="max-width: 500px;" *ngIf="message">
+      {{ message }}
+    </p>
+  </div>
+</div>
