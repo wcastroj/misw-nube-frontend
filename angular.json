@@ -87,12 +87,6 @@
                 }
               ],
               "outputHashing": "none"
-              ,
-              "optimization": {
-                "scripts": false,
-                "styles": true,
-                "fonts": true
-              }
             },
             "development": {
               "optimization": false,
