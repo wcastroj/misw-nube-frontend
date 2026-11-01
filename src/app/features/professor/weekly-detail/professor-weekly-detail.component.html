@@ -8,7 +8,7 @@
         <h2 class="fw-bold text-dark mb-0">Detalle Semanal de Actividades</h2>
       </div>
       <p class="text-muted mb-0">
-        {{ weeklyDetail.persona_nombre }} &bull; {{ weeklyDetail.workspace_nombre }}
+        {{ weeklyDetail.student.user_name }} &bull; {{ weeklyDetail.workspace.workspace_name }}
       </p>
     </div>
 
@@ -20,8 +20,8 @@
         class="form-control form-control-sm"
         style="width: 140px;"
         placeholder="YYYY-Www"
-        [ngModel]="selectedWeek"
-        (ngModelChange)="onWeekChange($event)"
+        [(ngModel)]="selectedWeek"
+        (change)="onWeekChange(selectedWeek)"
       />
     </div>
   </div>
@@ -36,23 +36,23 @@
         </div>
         <div class="col-12 col-md-4 text-center border-end-md">
           <span class="text-muted small d-block">Balance Semanal</span>
-          <span class="fs-4 fw-bold text-dark">{{ weeklyDetail.reported_hours }}</span>
-          <span class="text-muted"> / {{ weeklyDetail.contracted_hours }} h</span>
+          <span class="fs-4 fw-bold text-dark">{{ weeklyDetail.total_hours_spent }}</span>
+          <span class="text-muted"> / {{ weeklyDetail.weekly_hours }} h</span>
         </div>
         <div class="col-12 col-md-4 text-center text-md-end">
           <div class="d-flex flex-column align-items-center align-items-md-end gap-1">
             <span
               class="badge fs-6"
-              [ngClass]="weeklyDetail.report_status === 'REPORTED' ? 'bg-success' : 'bg-danger'"
+              [ngClass]="weeklyDetail.status === 'REPORTED' ? 'bg-success' : 'bg-danger'"
             >
-              {{ weeklyDetail.report_status === 'REPORTED' ? 'Reportado' : 'Sin reporte' }}
+              {{ weeklyDetail.status === 'REPORTED' ? 'Reportado' : 'Sin reporte' }}
             </span>
             <span
-              *ngIf="weeklyDetail.reported_hours > weeklyDetail.contracted_hours"
+              *ngIf="weeklyDetail.hours_balance > 0"
               class="badge bg-warning text-dark mt-1"
             >
               <i class="bi bi-exclamation-triangle-fill me-1"></i>
-              Sobrecumplimiento: +{{ weeklyDetail.reported_hours - weeklyDetail.contracted_hours }} h
+              Sobrecumplimiento: +{{ weeklyDetail.hours_balance }} h
             </span>
           </div>
         </div>
@@ -87,9 +87,9 @@
               <td class="text-center">
                 <span
                   class="badge"
-                  [ngClass]="task.status === 'FINALIZADA' ? 'bg-success' : 'bg-warning text-dark'"
+                  [ngClass]="task.status === 'COMPLETED' ? 'bg-success' : 'bg-warning text-dark'"
                 >
-                  {{ task.status === 'FINALIZADA' ? 'Finalizada' : 'Pendiente' }}
+                  {{ task.status | taskStatus }}
                 </span>
               </td>
               <td>

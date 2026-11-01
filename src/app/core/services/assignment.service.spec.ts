@@ -55,67 +55,71 @@ describe('AssignmentService', () => {
     req.flush(mockResponse);
   });
 
-  it('should fetch weekly detail via GET /assignments/:id/weekly without query param', () => {
-    const mockDetail: WeeklyWorkDetail = {
-      assignment_id: 101,
-      persona_nombre: 'Juan Monitor',
-      workspace_nombre: 'MISW4204',
-      week: '2026-W42',
-      contracted_hours: 10,
-      reported_hours: 8,
-      report_status: 'REPORTED',
-      tasks: []
-    };
+  const weeklyDetail = (week: string): WeeklyWorkDetail => ({
+    student: { user_id: 12, user_name: 'Juan Monitor' },
+    workspace: { workspace_id: 5, workspace_name: 'MISW4204', workspace_status: 'ACTIVO' },
+    role: 'MONITOR',
+    weekly_hours: 10,
+    week,
+    status: 'REPORTED',
+    total_hours_spent: 8,
+    expected_hours: 10,
+    hours_balance: -2,
+    has_late_reports: false,
+    tasks: []
+  });
 
-    service.getWeeklyDetail(101).subscribe(res => {
-      expect(res).toEqual(mockDetail);
+  it('should fetch weekly detail via GET /assignments/:id/weekly and unwrap data', () => {
+    const detail = weeklyDetail('2026-W42');
+
+    service.getWeeklyDetail(101).subscribe((res) => {
+      expect(res).toEqual(detail);
     });
 
     const req = httpMock.expectOne(`${environment.apiUrl}/assignments/101/weekly`);
     expect(req.request.method).toBe('GET');
-    req.flush(mockDetail);
+    req.flush({ data: detail });
   });
 
   it('should fetch weekly detail via GET /assignments/:id/weekly with week query param', () => {
-    const mockDetail: WeeklyWorkDetail = {
-      assignment_id: 101,
-      persona_nombre: 'Juan Monitor',
-      workspace_nombre: 'MISW4204',
-      week: '2026-W41',
-      contracted_hours: 10,
-      reported_hours: 12,
-      report_status: 'REPORTED',
-      is_overcompleted: true,
-      tasks: []
-    };
+    const detail = weeklyDetail('2026-W41');
 
-    service.getWeeklyDetail(101, '2026-W41').subscribe(res => {
-      expect(res).toEqual(mockDetail);
+    service.getWeeklyDetail(101, '2026-W41').subscribe((res) => {
+      expect(res).toEqual(detail);
     });
 
     const req = httpMock.expectOne(`${environment.apiUrl}/assignments/101/weekly?week=2026-W41`);
     expect(req.request.method).toBe('GET');
-    req.flush(mockDetail);
+    req.flush({ data: detail });
   });
 
-  it('should fetch consolidated detail via GET /assignments/:id/consolidated', () => {
-    const mockConsolidated: ConsolidatedSummary = {
-      assignment_id: 101,
-      persona_nombre: 'Juan Monitor',
-      workspace_nombre: 'MISW4204',
-      total_contracted_hours: 160,
-      total_reported_hours: 150,
-      compliance_percentage: 93.75,
-      weeks_without_report_count: 1,
+  it('should fetch consolidated detail via GET /assignments/:id/consolidated and unwrap data', () => {
+    const consolidated: ConsolidatedSummary = {
+      student: { user_id: 12, user_name: 'Juan Monitor' },
+      workspace: { workspace_id: 5, workspace_name: 'MISW4204', workspace_status: 'ACTIVO' },
+      role: 'MONITOR',
+      weekly_hours: 10,
+      summary: {
+        start_week: '2026-W41',
+        end_week: '2026-W42',
+        total_weeks_evaluated: 2,
+        reported_weeks_count: 1,
+        no_report_weeks_count: 1,
+        expected_hours: 20,
+        total_hours_spent: 8,
+        total_tasks: 2,
+        hours_balance: -12,
+        compliance_percentage: 40
+      },
       weeks: []
     };
 
-    service.getConsolidatedDetail(101).subscribe(res => {
-      expect(res).toEqual(mockConsolidated);
+    service.getConsolidatedDetail(101).subscribe((res) => {
+      expect(res).toEqual(consolidated);
     });
 
     const req = httpMock.expectOne(`${environment.apiUrl}/assignments/101/consolidated`);
     expect(req.request.method).toBe('GET');
-    req.flush(mockConsolidated);
+    req.flush({ data: consolidated });
   });
 });

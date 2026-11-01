@@ -8,7 +8,7 @@
         <h2 class="fw-bold text-dark mb-0">Consolidado Histórico de Vinculación</h2>
       </div>
       <p class="text-muted mb-0">
-        {{ consolidated.persona_nombre }} &bull; {{ consolidated.workspace_nombre }}
+        {{ consolidated.student.user_name }} &bull; {{ consolidated.workspace.workspace_name }}
       </p>
     </div>
   </div>
@@ -19,7 +19,7 @@
       <div class="card shadow-sm border-0 h-100">
         <div class="card-body text-center p-3">
           <span class="text-muted small d-block mb-1">Cumplimiento Global</span>
-          <h3 class="fw-bold text-primary mb-0">{{ consolidated.compliance_percentage }}%</h3>
+          <h3 class="fw-bold text-primary mb-0">{{ consolidated.summary.compliance_percentage }}%</h3>
           <small class="text-muted">Sobre el total esperado</small>
         </div>
       </div>
@@ -30,7 +30,7 @@
         <div class="card-body text-center p-3">
           <span class="text-muted small d-block mb-1">Horas Acumuladas</span>
           <h3 class="fw-bold text-dark mb-0">
-            {{ consolidated.total_reported_hours }} <span class="fs-5 text-muted">/ {{ consolidated.total_contracted_hours }} h</span>
+            {{ consolidated.summary.total_hours_spent }} <span class="fs-5 text-muted">/ {{ consolidated.summary.expected_hours }} h</span>
           </h3>
           <small class="text-muted">Reportadas vs Contratadas</small>
         </div>
@@ -41,7 +41,7 @@
       <div class="card shadow-sm border-0 h-100">
         <div class="card-body text-center p-3">
           <span class="text-muted small d-block mb-1">Semanas Sin Reporte</span>
-          <h3 class="fw-bold text-danger mb-0">{{ consolidated.weeks_without_report_count }}</h3>
+          <h3 class="fw-bold text-danger mb-0">{{ consolidated.summary.no_report_weeks_count }}</h3>
           <small class="text-muted">Semanas transcurridas sin tareas</small>
         </div>
       </div>
@@ -71,10 +71,10 @@
                 {{ weekItem.week | isoWeek }}
               </td>
               <td class="text-center fw-bold">
-                {{ weekItem.reported_hours }} h
+                {{ weekItem.total_hours_spent }} h
               </td>
               <td class="text-center text-muted">
-                {{ weekItem.contracted_hours }} h
+                {{ consolidated.weekly_hours }} h
               </td>
               <td class="text-center">
                 <span class="badge bg-light text-dark border">{{ weekItem.task_count }}</span>
@@ -82,10 +82,11 @@
               <td class="text-center pe-4">
                 <span
                   class="badge"
-                  [ngClass]="weekItem.report_status === 'REPORTED' ? 'bg-success' : 'bg-danger'"
+                  [ngClass]="weekItem.status === 'REPORTED' ? 'bg-success' : 'bg-danger'"
                 >
-                  {{ weekItem.report_status === 'REPORTED' ? 'Reportado' : 'Sin reporte' }}
+                  {{ weekItem.status === 'REPORTED' ? 'Reportado' : 'Sin reporte' }}
                 </span>
+                <span *ngIf="weekItem.has_late_reports" class="badge bg-warning text-dark ms-1">Tardío</span>
               </td>
             </tr>
           </tbody>

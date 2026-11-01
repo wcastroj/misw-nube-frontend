@@ -4,7 +4,7 @@ import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { ToastrService } from 'ngx-toastr';
 import { ReportService } from '../../../core/services/report.service';
-import { ReportSummary } from '../../../core/models/report.model';
+import { ReportListItem } from '../../../core/models/report.model';
 import { IsoWeekPipe } from '../../../shared/pipes/iso-week.pipe';
 import { EmptyStateComponent } from '../../../shared/components/empty-state/empty-state.component';
 
@@ -21,7 +21,7 @@ export class ProfessorReportsComponent implements OnInit {
   public currentIsoWeek: string = this.computeCurrentIsoWeek();
   public selectedWeek: string = '';
   public closedWeeks: string[] = [];
-  public reports: ReportSummary[] = [];
+  public reports: ReportListItem[] = [];
   public activeBatchId: number | null = null;
 
   ngOnInit(): void {
@@ -42,10 +42,8 @@ export class ProfessorReportsComponent implements OnInit {
   loadReports(week: string): void {
     this.reportService.getReports(week).subscribe({
       next: (reports) => {
-        this.reports = reports || [];
-        if (reports && reports.length > 0 && reports[0].batch_id) {
-          this.activeBatchId = reports[0].batch_id;
-        }
+        this.reports = reports;
+        this.activeBatchId = reports.length > 0 ? reports[0].batch_id : null;
       },
       error: () => {}
     });
@@ -63,8 +61,13 @@ export class ProfessorReportsComponent implements OnInit {
 
     this.reportService.triggerBatchReport(this.selectedWeek).subscribe({
       next: (res) => {
-        this.activeBatchId = res.batch_id;
-        this.toastr.success('La generación del lote de reportes ha sido iniciada exitosamente.');
+        this.toastr.success(
+          `Se encolaron ${res.status_counts.pending} reporte(s). Vuelve a seleccionar la semana en unos minutos para descargarlos.`,
+          'Lote iniciado'
+        );
+        if (res.status_counts.failed > 0) {
+          this.toastr.error(`${res.status_counts.failed} reporte(s) no se pudieron encolar.`);
+        }
         this.loadReports(this.selectedWeek);
       },
       error: () => {}

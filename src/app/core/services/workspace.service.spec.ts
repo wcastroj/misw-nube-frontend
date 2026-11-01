@@ -33,15 +33,17 @@ describe('WorkspaceService', () => {
   it('should fetch operational workspaces via GET /workspaces', () => {
     const mockWorkspaces: OperationalWorkspace[] = [
       {
-        assignment_id: 10,
-        workspace_id: 101,
-        workspace_nombre: 'Desarrollo en la Nube',
+        id: 101,
         tipo: 'CURSO',
-        profesor_nombre: 'Profesor Carlos',
-        profesor_email: 'carlos@uniandes.edu.co',
-        rol: 'GRADUATE_ASSISTANT',
-        horas_semanales: 20,
-        estado: 'ACTIVO'
+        nombre: 'Desarrollo en la Nube',
+        estado: 'ACTIVO',
+        fechaInicio: '2026-08-03',
+        fechaFin: '2026-11-28',
+        observaciones: '',
+        periodo: { id: 1, codigo: '2026-02' },
+        profesor: { nombre: 'Profesor Carlos', email: 'carlos@uniandes.edu.co' },
+        rolVinculacion: 'GRADUATE_ASSISTANT',
+        horasSemanales: 20
       }
     ];
 

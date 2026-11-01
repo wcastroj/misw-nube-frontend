@@ -75,22 +75,21 @@
           </thead>
           <tbody>
             <tr *ngFor="let report of reports">
-              <td class="ps-4 fw-semibold text-dark">
-                {{ report.person_name }}
+              <td class="ps-4">
+                <div class="fw-semibold text-dark">{{ report.person.full_name }}</div>
+                <small class="text-muted">{{ report.workspace.name }}</small>
               </td>
               <td class="text-center">
                 {{ report.week | isoWeek }}
               </td>
               <td class="text-center">
-                <span class="badge bg-success">
-                  {{ report.status }}
-                </span>
+                <span class="badge bg-success">Generado</span>
               </td>
               <td class="text-end pe-4">
                 <button
                   type="button"
                   class="btn btn-sm btn-outline-primary btn-download-pdf"
-                  (click)="downloadPdf(report.id, report.person_name)"
+                  (click)="downloadPdf(report.report_id, report.person.full_name)"
                 >
                   <i class="bi bi-file-earmark-arrow-down me-1"></i> Descargar PDF
                 </button>

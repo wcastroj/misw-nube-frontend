@@ -4,12 +4,13 @@ import { ActivatedRoute, RouterModule } from '@angular/router';
 import { TaskService } from '../../../core/services/task.service';
 import { WeeklyHistoryItem, Task } from '../../../core/models/task.model';
 import { IsoWeekPipe } from '../../../shared/pipes/iso-week.pipe';
+import { TaskStatusPipe } from '../../../shared/pipes/task-status.pipe';
 import { EmptyStateComponent } from '../../../shared/components/empty-state/empty-state.component';
 
 @Component({
   selector: 'app-operational-history',
   standalone: true,
-  imports: [CommonModule, RouterModule, IsoWeekPipe, EmptyStateComponent],
+  imports: [CommonModule, RouterModule, IsoWeekPipe, TaskStatusPipe, EmptyStateComponent],
   templateUrl: './operational-history.component.html'
 })
 export class OperationalHistoryComponent implements OnInit {
@@ -32,7 +33,7 @@ export class OperationalHistoryComponent implements OnInit {
   loadHistory(): void {
     this.taskService.getTaskHistory(this.assignmentId).subscribe({
       next: (history) => {
-        this.historyWeeks = history || [];
+        this.historyWeeks = history.weeks;
       },
       error: () => {}
     });
@@ -46,16 +47,12 @@ export class OperationalHistoryComponent implements OnInit {
     }
 
     this.expandedWeek = week;
-    const existing = this.historyWeeks.find((h) => h.week === week);
-    if (existing && existing.tasks && existing.tasks.length > 0) {
-      this.expandedTasks = existing.tasks;
-    } else {
-      this.taskService.getTasks(this.assignmentId, week).subscribe({
-        next: (tasks) => {
-          this.expandedTasks = tasks || [];
-        },
-        error: () => {}
-      });
-    }
+    this.expandedTasks = [];
+    this.taskService.getTasks(this.assignmentId, week).subscribe({
+      next: (res) => {
+        this.expandedTasks = res.tasks;
+      },
+      error: () => {}
+    });
   }
 }

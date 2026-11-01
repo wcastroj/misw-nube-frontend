@@ -12,36 +12,36 @@ describe('ProfessorWeeklyDetailComponent', () => {
   let assignmentServiceSpy: jasmine.SpyObj<AssignmentService>;
 
   const mockWeeklyDetail: WeeklyWorkDetail = {
-    assignment_id: 1,
-    persona_nombre: 'Ana María Gómez',
-    workspace_nombre: 'Desarrollo en la Nube',
+    student: { user_id: 10, user_name: 'Ana María Gómez' },
+    workspace: { workspace_id: 4, workspace_name: 'Desarrollo en la Nube', workspace_status: 'ACTIVO' },
+    role: 'MONITOR',
+    weekly_hours: 10,
     week: '2026-W42',
-    contracted_hours: 10,
-    reported_hours: 14,
-    report_status: 'REPORTED',
-    is_overcompleted: true,
+    status: 'REPORTED',
+    total_hours_spent: 14,
+    expected_hours: 10,
+    hours_balance: 4,
+    has_late_reports: true,
     tasks: [
       {
         id: 1,
-        assignment_id: 1,
-        week: '2026-W42',
         title: 'Calificación Taller 1',
         description: 'Revisión entregas',
-        status: 'FINALIZADA',
+        status: 'COMPLETED',
         hours_spent: 8,
         observations: 'Notas en el LMS',
-        is_late_report: false
+        is_late_report: false,
+        attachments: []
       },
       {
         id: 2,
-        assignment_id: 1,
-        week: '2026-W42',
         title: 'Atención a estudiantes',
         description: 'Dudas sobre el taller',
-        status: 'FINALIZADA',
+        status: 'IN_PROGRESS',
         hours_spent: 6,
         observations: 'Sesión virtual',
-        is_late_report: true
+        is_late_report: true,
+        attachments: []
       }
     ]
   };
@@ -81,6 +81,9 @@ describe('ProfessorWeeklyDetailComponent', () => {
     expect(compiled.textContent).toContain('Ana María Gómez');
     expect(compiled.textContent).toContain('Desarrollo en la Nube');
     expect(compiled.textContent).toContain('Calificación Taller 1');
+    expect(compiled.textContent).toContain('14');
+    expect(compiled.textContent).toContain('Finalizada');
+    expect(compiled.textContent).toContain('En progreso');
   });
 
   it('should display overcompletion indicator when reported hours exceed contracted hours', () => {

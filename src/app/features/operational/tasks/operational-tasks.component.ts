@@ -8,12 +8,13 @@ import { WorkspaceService } from '../../../core/services/workspace.service';
 import { Task, TaskStatus } from '../../../core/models/task.model';
 import { OperationalWorkspace } from '../../../core/models/workspace.model';
 import { IsoWeekPipe } from '../../../shared/pipes/iso-week.pipe';
+import { TaskStatusPipe } from '../../../shared/pipes/task-status.pipe';
 import { EmptyStateComponent } from '../../../shared/components/empty-state/empty-state.component';
 
 @Component({
   selector: 'app-operational-tasks',
   standalone: true,
-  imports: [CommonModule, RouterModule, ReactiveFormsModule, IsoWeekPipe, EmptyStateComponent],
+  imports: [CommonModule, RouterModule, ReactiveFormsModule, IsoWeekPipe, TaskStatusPipe, EmptyStateComponent],
   templateUrl: './operational-tasks.component.html'
 })
 export class OperationalTasksComponent implements OnInit {
@@ -39,7 +40,7 @@ export class OperationalTasksComponent implements OnInit {
     week: ['', [Validators.required]],
     title: ['', [Validators.required]],
     description: ['', [Validators.required]],
-    status: ['FINALIZADA' as TaskStatus, [Validators.required]],
+    status: ['COMPLETED' as TaskStatus, [Validators.required]],
     hours_spent: ['', [Validators.required, Validators.pattern('^[1-9][0-9]*$')]],
     observations: ['']
   });
@@ -74,8 +75,8 @@ export class OperationalTasksComponent implements OnInit {
 
   loadTasks(): void {
     this.taskService.getTasks(this.assignmentId, this.currentIsoWeek).subscribe({
-      next: (tasks) => {
-        this.tasks = tasks || [];
+      next: (res) => {
+        this.tasks = res.tasks;
       },
       error: () => {}
     });
@@ -132,8 +133,11 @@ export class OperationalTasksComponent implements OnInit {
         hours_spent: hours,
         observations: formValues.observations
       }).subscribe({
-        next: () => {
+        next: (res) => {
           this.toastr.success('Tarea registrada exitosamente.');
+          if (res.is_late_report) {
+            this.toastr.warning('La tarea quedó registrada como reporte tardío y no podrá modificarse.', 'Reporte tardío');
+          }
           this.resetForm();
           this.loadTasks();
         },
@@ -155,7 +159,7 @@ export class OperationalTasksComponent implements OnInit {
       hours_spent: task.hours_spent.toString(),
       observations: task.observations || ''
     });
-    this.checkLateReport(task.week);
+    this.checkLateReport(this.currentIsoWeek);
   }
 
   cancelEdit(): void {
@@ -193,7 +197,7 @@ export class OperationalTasksComponent implements OnInit {
       week: this.currentIsoWeek,
       title: '',
       description: '',
-      status: 'FINALIZADA',
+      status: 'COMPLETED',
       hours_spent: '',
       observations: ''
     });

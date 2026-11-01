@@ -9,7 +9,7 @@
         <h2 class="fw-bold text-dark mb-0">Gestión de Tareas Semanales</h2>
       </div>
       <p class="text-muted mb-0" *ngIf="workspace">
-        {{ workspace.workspace_nombre }} &bull; {{ workspace.profesor_nombre }} &bull;
+        {{ workspace.nombre }} &bull; {{ workspace.profesor.nombre }} &bull;
         <span class="badge" [ngClass]="workspace.estado === 'ACTIVO' ? 'bg-success' : 'bg-secondary'">
           {{ workspace.estado === 'ACTIVO' ? 'Espacio Activo' : 'Espacio Cerrado' }}
         </span>
@@ -33,21 +33,21 @@
         <div class="col-12 col-md-4 text-center">
           <span class="text-muted small d-block">Horas Reportadas vs Contratadas</span>
           <span class="fs-4 fw-bold text-dark">{{ totalReportedHours }}</span>
-          <span class="text-muted"> / {{ workspace.horas_semanales }} h</span>
+          <span class="text-muted"> / {{ workspace.horasSemanales }} h</span>
         </div>
         <div class="col-12 col-md-4 text-center text-md-end">
           <span
-            *ngIf="totalReportedHours > workspace.horas_semanales"
+            *ngIf="totalReportedHours > workspace.horasSemanales"
             class="badge bg-warning text-dark fs-6"
           >
             <i class="bi bi-exclamation-triangle-fill me-1"></i>
-            Sobrecumplimiento: +{{ totalReportedHours - workspace.horas_semanales }} h
+            Sobrecumplimiento: +{{ totalReportedHours - workspace.horasSemanales }} h
           </span>
           <span
-            *ngIf="totalReportedHours <= workspace.horas_semanales"
+            *ngIf="totalReportedHours <= workspace.horasSemanales"
             class="badge bg-light text-muted border fs-6"
           >
-            {{ workspace.horas_semanales - totalReportedHours }} h restantes
+            {{ workspace.horasSemanales - totalReportedHours }} h restantes
           </span>
         </div>
       </div>
@@ -126,8 +126,9 @@
           <div class="col-12 col-md-4">
             <label for="taskStatus" class="form-label fw-semibold">Estado de la Tarea</label>
             <select id="taskStatus" class="form-select" formControlName="status">
-              <option value="FINALIZADA">Finalizada</option>
-              <option value="PENDIENTE">Pendiente</option>
+              <option value="COMPLETED">Finalizada</option>
+              <option value="IN_PROGRESS">En progreso</option>
+              <option value="OPEN">Pendiente</option>
             </select>
           </div>
 
@@ -198,9 +199,9 @@
               <td class="text-center">
                 <span
                   class="badge"
-                  [ngClass]="task.status === 'FINALIZADA' ? 'bg-success' : 'bg-warning text-dark'"
+                  [ngClass]="task.status === 'COMPLETED' ? 'bg-success' : 'bg-warning text-dark'"
                 >
-                  {{ task.status === 'FINALIZADA' ? 'Finalizada' : 'Pendiente' }}
+                  {{ task.status | taskStatus }}
                 </span>
               </td>
               <td>
