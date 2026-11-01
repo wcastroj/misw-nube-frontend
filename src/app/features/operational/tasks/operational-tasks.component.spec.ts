@@ -6,7 +6,7 @@ import { ToastrService } from 'ngx-toastr';
 import { OperationalTasksComponent } from './operational-tasks.component';
 import { TaskService } from '../../../core/services/task.service';
 import { WorkspaceService } from '../../../core/services/workspace.service';
-import { Task } from '../../../core/models/task.model';
+import { Task, TaskList } from '../../../core/models/task.model';
 import { OperationalWorkspace } from '../../../core/models/workspace.model';
 import { By } from '@angular/platform-browser';
 
@@ -18,38 +18,42 @@ describe('OperationalTasksComponent', () => {
   let toastrSpy: jasmine.SpyObj<ToastrService>;
 
   const mockWorkspace: OperationalWorkspace = {
-    assignment_id: 10,
-    workspace_id: 101,
-    workspace_nombre: 'Desarrollo en la Nube',
+    id: 101,
     tipo: 'CURSO',
-    profesor_nombre: 'Profesor Carlos',
-    rol: 'MONITOR',
-    horas_semanales: 10,
-    estado: 'ACTIVO'
+    nombre: 'Desarrollo en la Nube',
+    estado: 'ACTIVO',
+    fechaInicio: '2026-08-03',
+    fechaFin: '2026-11-28',
+    periodo: { id: 1, codigo: '2026-02' },
+    profesor: { nombre: 'Profesor Carlos', email: 'carlos@uniandes.edu.co' },
+    rolVinculacion: 'MONITOR',
+    horasSemanales: 10,
+    assignment_id: 10
   };
 
   const mockTasks: Task[] = [
     {
       id: 1,
-      assignment_id: 10,
       week: '2026-W42',
       title: 'Tarea Activa Editable',
       description: 'Descripción de prueba',
-      status: 'FINALIZADA',
+      status: 'COMPLETED',
       hours_spent: 4,
-      is_late_report: false
+      is_late_report: false,
+      attachments: [{ id: 9, name: 'guia.pdf', url: 'https://example.com/guia.pdf' }]
     },
     {
       id: 2,
-      assignment_id: 10,
       week: '2026-W41',
       title: 'Tarea Tardía Inmutable',
       description: 'Reportada a destiempo',
-      status: 'FINALIZADA',
+      status: 'OPEN',
       hours_spent: 3,
       is_late_report: true
     }
   ];
+
+  const mockTaskList: TaskList = { assignment_id: 10, week: '2026-W42', total_hours_spent: 7, tasks: mockTasks };
 
   beforeEach(async () => {
     taskServiceSpy = jasmine.createSpyObj('TaskService', [
@@ -61,8 +65,10 @@ describe('OperationalTasksComponent', () => {
     workspaceServiceSpy = jasmine.createSpyObj('WorkspaceService', ['getMyWorkspaces']);
     toastrSpy = jasmine.createSpyObj('ToastrService', ['success', 'error', 'warning']);
 
-    taskServiceSpy.getTasks.and.returnValue(of(mockTasks));
-    taskServiceSpy.createTask.and.returnValue(of(mockTasks[0]));
+    taskServiceSpy.getTasks.and.returnValue(of(mockTaskList));
+    taskServiceSpy.createTask.and.returnValue(
+      of({ task_id: 3, is_late_report: false, created_at: '2026-10-15T10:00:00Z' })
+    );
     taskServiceSpy.updateTask.and.returnValue(of(mockTasks[0]));
     taskServiceSpy.deleteTask.and.returnValue(of(undefined));
     workspaceServiceSpy.getMyWorkspaces.and.returnValue(of([mockWorkspace]));
@@ -96,7 +102,8 @@ describe('OperationalTasksComponent', () => {
   it('should create and load tasks and workspace info', () => {
     expect(component).toBeTruthy();
     expect(taskServiceSpy.getTasks).toHaveBeenCalledWith(10, '2026-W42');
-    expect(component.workspace?.workspace_nombre).toBe('Desarrollo en la Nube');
+    expect(component.workspace?.nombre).toBe('Desarrollo en la Nube');
+    expect(component.tasks.length).toBe(2);
   });
 
   it('should invalidate hours_spent when 0, negative, or decimal (EARS-11.7)', () => {
@@ -111,8 +118,40 @@ describe('OperationalTasksComponent', () => {
     hoursControl?.setValue('2.5');
     expect(hoursControl?.valid).toBeFalse();
 
+    hoursControl?.setValue('169');
+    expect(hoursControl?.valid).toBeFalse();
+
     hoursControl?.setValue('4');
     expect(hoursControl?.valid).toBeTrue();
+  });
+
+  it('should enforce backend length rules for title and description', () => {
+    component.taskForm.get('title')?.setValue('ab');
+    expect(component.taskForm.get('title')?.valid).toBeFalse();
+    component.taskForm.get('title')?.setValue('abc');
+    expect(component.taskForm.get('title')?.valid).toBeTrue();
+
+    component.taskForm.get('description')?.setValue('abcd');
+    expect(component.taskForm.get('description')?.valid).toBeFalse();
+    component.taskForm.get('description')?.setValue('abcde');
+    expect(component.taskForm.get('description')?.valid).toBeTrue();
+  });
+
+  it('should keep existing attachments when updating a task (PUT replaces the whole task)', () => {
+    component.editTask(mockTasks[0]);
+    component.taskForm.patchValue({ hours_spent: '6' });
+
+    component.submitTask();
+
+    expect(taskServiceSpy.updateTask).toHaveBeenCalledWith(
+      1,
+      jasmine.objectContaining({
+        hours_spent: 6,
+        status: 'COMPLETED',
+        attachments: [{ file_name: 'guia.pdf', url: 'https://example.com/guia.pdf' }]
+      })
+    );
+    expect(toastrSpy.success).toHaveBeenCalledWith('Tarea actualizada exitosamente.');
   });
 
   it('should activate late report warning when selecting a past week in the form (EARS-11.4)', () => {
@@ -131,15 +170,32 @@ describe('OperationalTasksComponent', () => {
       week: '2026-W42',
       title: 'Nueva Tarea Calificada',
       description: 'Detalle de la tarea',
-      status: 'FINALIZADA',
+      status: 'COMPLETED',
       hours_spent: 5,
       observations: 'Comentarios adicionales'
     });
 
     component.submitTask();
 
-    expect(taskServiceSpy.createTask).toHaveBeenCalled();
+    expect(taskServiceSpy.createTask).toHaveBeenCalledWith(jasmine.objectContaining({ assignment_id: 10, status: 'COMPLETED' }));
     expect(toastrSpy.success).toHaveBeenCalledWith('Tarea registrada exitosamente.');
+    expect(toastrSpy.warning).not.toHaveBeenCalled();
+  });
+
+  it('should warn with toastr when the created task is a late report', () => {
+    taskServiceSpy.createTask.and.returnValue(of({ task_id: 4, is_late_report: true, created_at: '2026-10-15T10:00:00Z' }));
+    component.taskForm.setValue({
+      week: '2026-W41',
+      title: 'Tarea tardía',
+      description: 'Registrada después',
+      status: 'COMPLETED',
+      hours_spent: 2,
+      observations: ''
+    });
+
+    component.submitTask();
+
+    expect(toastrSpy.warning).toHaveBeenCalled();
   });
 
   it('should allow edit and delete only for current week, active workspace and non-late tasks (EARS-12.1, EARS-12.2)', () => {

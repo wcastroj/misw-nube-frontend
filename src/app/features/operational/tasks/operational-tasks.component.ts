@@ -5,15 +5,16 @@ import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { ToastrService } from 'ngx-toastr';
 import { TaskService } from '../../../core/services/task.service';
 import { WorkspaceService } from '../../../core/services/workspace.service';
-import { Task, TaskStatus } from '../../../core/models/task.model';
+import { Task, TaskAttachment, TaskStatus } from '../../../core/models/task.model';
 import { OperationalWorkspace } from '../../../core/models/workspace.model';
 import { IsoWeekPipe } from '../../../shared/pipes/iso-week.pipe';
+import { TaskStatusPipe } from '../../../shared/pipes/task-status.pipe';
 import { EmptyStateComponent } from '../../../shared/components/empty-state/empty-state.component';
 
 @Component({
   selector: 'app-operational-tasks',
   standalone: true,
-  imports: [CommonModule, RouterModule, ReactiveFormsModule, IsoWeekPipe, EmptyStateComponent],
+  imports: [CommonModule, RouterModule, ReactiveFormsModule, IsoWeekPipe, TaskStatusPipe, EmptyStateComponent],
   templateUrl: './operational-tasks.component.html'
 })
 export class OperationalTasksComponent implements OnInit {
@@ -32,16 +33,18 @@ export class OperationalTasksComponent implements OnInit {
 
   public isEditing: boolean = false;
   public editingTaskId: number | null = null;
+  // PUT /tasks/:id replaces the whole task: attachments not sent are deleted (frontend-api.md §8.4).
+  private editingAttachments: TaskAttachment[] = [];
   public showDeleteModal: boolean = false;
   public taskToDelete: Task | null = null;
 
   public taskForm: FormGroup = this.fb.group({
     week: ['', [Validators.required]],
-    title: ['', [Validators.required]],
-    description: ['', [Validators.required]],
-    status: ['FINALIZADA' as TaskStatus, [Validators.required]],
-    hours_spent: ['', [Validators.required, Validators.pattern('^[1-9][0-9]*$')]],
-    observations: ['']
+    title: ['', [Validators.required, Validators.minLength(3), Validators.maxLength(150)]],
+    description: ['', [Validators.required, Validators.minLength(5), Validators.maxLength(1000)]],
+    status: ['COMPLETED' as TaskStatus, [Validators.required]],
+    hours_spent: ['', [Validators.required, Validators.pattern('^[1-9][0-9]*$'), Validators.max(168)]],
+    observations: ['', [Validators.maxLength(1000)]]
   });
 
   ngOnInit(): void {
@@ -74,8 +77,8 @@ export class OperationalTasksComponent implements OnInit {
 
   loadTasks(): void {
     this.taskService.getTasks(this.assignmentId, this.currentIsoWeek).subscribe({
-      next: (tasks) => {
-        this.tasks = tasks || [];
+      next: (res) => {
+        this.tasks = res.tasks;
       },
       error: () => {}
     });
@@ -113,7 +116,8 @@ export class OperationalTasksComponent implements OnInit {
         description: formValues.description,
         status: formValues.status,
         hours_spent: hours,
-        observations: formValues.observations
+        observations: formValues.observations,
+        attachments: this.editingAttachments
       }).subscribe({
         next: () => {
           this.toastr.success('Tarea actualizada exitosamente.');
@@ -132,8 +136,11 @@ export class OperationalTasksComponent implements OnInit {
         hours_spent: hours,
         observations: formValues.observations
       }).subscribe({
-        next: () => {
+        next: (res) => {
           this.toastr.success('Tarea registrada exitosamente.');
+          if (res.is_late_report) {
+            this.toastr.warning('La tarea quedó registrada como reporte tardío y no podrá modificarse.', 'Reporte tardío');
+          }
           this.resetForm();
           this.loadTasks();
         },
@@ -147,6 +154,10 @@ export class OperationalTasksComponent implements OnInit {
 
     this.isEditing = true;
     this.editingTaskId = task.id;
+    this.editingAttachments = (task.attachments || []).map((a) => ({
+      file_name: a.file_name || a.name,
+      url: a.url
+    }));
     this.taskForm.patchValue({
       week: task.week,
       title: task.title,
@@ -155,7 +166,7 @@ export class OperationalTasksComponent implements OnInit {
       hours_spent: task.hours_spent.toString(),
       observations: task.observations || ''
     });
-    this.checkLateReport(task.week);
+    this.checkLateReport(this.currentIsoWeek);
   }
 
   cancelEdit(): void {
@@ -189,11 +200,12 @@ export class OperationalTasksComponent implements OnInit {
   resetForm(): void {
     this.isEditing = false;
     this.editingTaskId = null;
+    this.editingAttachments = [];
     this.taskForm.reset({
       week: this.currentIsoWeek,
       title: '',
       description: '',
-      status: 'FINALIZADA',
+      status: 'COMPLETED',
       hours_spent: '',
       observations: ''
     });

@@ -25,20 +25,20 @@
           <tbody>
             <tr *ngFor="let ws of workspaces">
               <td class="ps-4">
-                <div class="fw-semibold text-dark">{{ ws.workspace_nombre }}</div>
+                <div class="fw-semibold text-dark">{{ ws.nombre }}</div>
                 <small class="badge bg-light text-muted border" *ngIf="ws.tipo">{{ ws.tipo }}</small>
               </td>
               <td>
-                <div class="text-dark">{{ ws.profesor_nombre }}</div>
-                <small class="text-muted" *ngIf="ws.profesor_email">{{ ws.profesor_email }}</small>
+                <div class="text-dark">{{ ws.profesor.nombre }}</div>
+                <small class="text-muted" *ngIf="ws.profesor.email">{{ ws.profesor.email }}</small>
               </td>
               <td>
                 <span class="badge bg-light text-dark border">
-                  {{ getRoleLabel(ws.rol) }}
+                  {{ getRoleLabel(ws.rolVinculacion) }}
                 </span>
               </td>
               <td class="text-center fw-bold">
-                {{ ws.horas_semanales }} h
+                {{ ws.horasSemanales }} h
               </td>
               <td class="text-center">
                 <span

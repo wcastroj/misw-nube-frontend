@@ -57,3 +57,22 @@ Angular CLI does not come with an end-to-end testing framework by default. You c
 ## Additional Resources
 
 For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+
+## Despliegue en GCS
+
+Sube siempre la carpeta `browser/` completa. Si falta algún archivo (por ejemplo `polyfills-*.js`, que trae zone.js), la app carga pero las vistas no se actualizan al llegar los datos.
+
+```bash
+npx ng build
+gcloud storage rsync dist/misw-nube-frontend/browser \
+  gs://entrega-frontend-nube-1793477639/browser \
+  --recursive --delete-unmatched-destination-objects
+gcloud storage objects update gs://entrega-frontend-nube-1793477639/browser/index.html \
+  --cache-control="no-cache, max-age=0"
+```
+
+URL: http://storage.googleapis.com/entrega-frontend-nube-1793477639/browser/index.html
+
+La app usa rutas con hash (`withHashLocation()` en `src/app/app.config.ts`) porque `storage.googleapis.com` no tiene
+fallback a `index.html`: una ruta como `.../browser/login` responde `NoSuchKey`. Los enlaces directos tienen la forma
+`.../browser/index.html#/login`, `.../browser/index.html#/professor/assignments`, etc.

@@ -31,15 +31,14 @@
           <tbody>
             <tr *ngFor="let item of assignments">
               <td class="ps-4">
-                <div class="fw-semibold text-dark">{{ item.persona_nombre }}</div>
-                <small class="text-muted" *ngIf="item.persona_email">{{ item.persona_email }}</small>
+                <div class="fw-semibold text-dark">{{ item.user.name }}</div>
               </td>
               <td>
-                <span class="fw-medium">{{ item.workspace_nombre }}</span>
+                <span class="fw-medium">{{ item.workspace.name }}</span>
               </td>
               <td>
                 <span class="badge bg-light text-dark border">
-                  {{ getRoleLabel(item.rol) }}
+                  {{ getRoleLabel(item.role) }}
                 </span>
               </td>
               <td class="text-center">
@@ -49,9 +48,9 @@
               <td class="text-center">
                 <span
                   class="badge"
-                  [ngClass]="item.report_status === 'REPORTED' ? 'bg-success' : 'bg-danger'"
+                  [ngClass]="item.reported_hours > 0 ? 'bg-success' : 'bg-danger'"
                 >
-                  {{ item.report_status === 'REPORTED' ? 'Reportado' : 'Sin reporte' }}
+                  {{ item.reported_hours > 0 ? 'Reportado' : 'Sin reporte' }}
                 </span>
               </td>
               <td class="text-end pe-4">

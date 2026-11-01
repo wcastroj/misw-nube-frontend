@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable, tap } from 'rxjs';
-import { BatchReportResponse, ReportSummary } from '../models/report.model';
+import { Observable, map, tap } from 'rxjs';
+import { ReportBatch, ReportListItem } from '../models/report.model';
 import { environment } from '../../../environments/environment';
 
 @Injectable({
@@ -10,13 +10,17 @@ import { environment } from '../../../environments/environment';
 export class ReportService {
   private http = inject(HttpClient);
 
-  triggerBatchReport(week: string): Observable<BatchReportResponse> {
-    return this.http.post<BatchReportResponse>(`${environment.apiUrl}/reports/batch`, { week });
+  triggerBatchReport(week: string): Observable<ReportBatch> {
+    return this.http
+      .post<{ data: ReportBatch }>(`${environment.apiUrl}/reports/batch`, { week })
+      .pipe(map((res) => res.data));
   }
 
-  getReports(week: string): Observable<ReportSummary[]> {
+  getReports(week: string): Observable<ReportListItem[]> {
     const params = new HttpParams().set('week', week);
-    return this.http.get<ReportSummary[]>(`${environment.apiUrl}/reports`, { params });
+    return this.http
+      .get<{ data: { reports: ReportListItem[] } }>(`${environment.apiUrl}/reports`, { params })
+      .pipe(map((res) => res.data.reports));
   }
 
   downloadReportPdf(reportId: number, filename: string = `reporte_${reportId}.pdf`): Observable<Blob> {

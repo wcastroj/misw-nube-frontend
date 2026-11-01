@@ -5,12 +5,13 @@ import { FormsModule } from '@angular/forms';
 import { AssignmentService } from '../../../core/services/assignment.service';
 import { WeeklyWorkDetail } from '../../../core/models/assignment.model';
 import { IsoWeekPipe } from '../../../shared/pipes/iso-week.pipe';
+import { TaskStatusPipe } from '../../../shared/pipes/task-status.pipe';
 import { EmptyStateComponent } from '../../../shared/components/empty-state/empty-state.component';
 
 @Component({
   selector: 'app-professor-weekly-detail',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, IsoWeekPipe, EmptyStateComponent],
+  imports: [CommonModule, RouterModule, FormsModule, IsoWeekPipe, TaskStatusPipe, EmptyStateComponent],
   templateUrl: './professor-weekly-detail.component.html'
 })
 export class ProfessorWeeklyDetailComponent implements OnInit {

@@ -45,7 +45,7 @@
                   ></i>
                   {{ h.week | isoWeek }}
                 </td>
-                <td class="text-center fw-bold">{{ h.total_hours }} h</td>
+                <td class="text-center fw-bold">{{ h.total_hours_spent }} h</td>
                 <td class="text-center">
                   <span class="badge bg-light text-dark border">{{ h.task_count }}</span>
                 </td>
@@ -99,9 +99,9 @@
                               <td class="text-center">
                                 <span
                                   class="badge"
-                                  [ngClass]="t.status === 'FINALIZADA' ? 'bg-success' : 'bg-warning text-dark'"
+                                  [ngClass]="t.status === 'COMPLETED' ? 'bg-success' : 'bg-warning text-dark'"
                                 >
-                                  {{ t.status === 'FINALIZADA' ? 'Finalizada' : 'Pendiente' }}
+                                  {{ t.status | taskStatus }}
                                 </span>
                               </td>
                               <td class="text-muted small">{{ t.observations || 'Sin observaciones' }}</td>

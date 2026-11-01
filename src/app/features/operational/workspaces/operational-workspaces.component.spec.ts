@@ -13,26 +13,30 @@ describe('OperationalWorkspacesComponent', () => {
 
   const mockWorkspaces: OperationalWorkspace[] = [
     {
-      assignment_id: 10,
-      workspace_id: 101,
-      workspace_nombre: 'Desarrollo de Software en la Nube',
+      id: 101,
       tipo: 'CURSO',
-      profesor_nombre: 'Profesor Carlos',
-      profesor_email: 'carlos@uniandes.edu.co',
-      rol: 'GRADUATE_ASSISTANT',
-      horas_semanales: 20,
-      estado: 'ACTIVO'
+      nombre: 'Desarrollo de Software en la Nube',
+      estado: 'ACTIVO',
+      fechaInicio: '2026-08-03',
+      fechaFin: '2026-11-28',
+      periodo: { id: 1, codigo: '2026-02' },
+      profesor: { nombre: 'Profesor Carlos', email: 'carlos@uniandes.edu.co' },
+      rolVinculacion: 'GRADUATE_ASSISTANT',
+      horasSemanales: 20,
+      assignment_id: 10
     },
     {
-      assignment_id: 11,
-      workspace_id: 102,
-      workspace_nombre: 'Proyecto Ágil',
+      id: 102,
       tipo: 'PROYECTO',
-      profesor_nombre: 'Profesora María',
-      profesor_email: 'maria@uniandes.edu.co',
-      rol: 'MONITOR',
-      horas_semanales: 10,
-      estado: 'CERRADO'
+      nombre: 'Proyecto Ágil',
+      estado: 'CERRADO',
+      fechaInicio: '2026-01-19',
+      fechaFin: '2026-05-30',
+      periodo: { id: 2, codigo: '2026-01' },
+      profesor: { nombre: 'Profesora María', email: 'maria@uniandes.edu.co' },
+      rolVinculacion: 'MONITOR',
+      horasSemanales: 10,
+      assignment_id: 11
     }
   ];
 
@@ -67,6 +71,25 @@ describe('OperationalWorkspacesComponent', () => {
 
     const closedBadge = fixture.debugElement.query(By.css('.badge.bg-secondary'));
     expect(closedBadge.nativeElement.textContent).toContain('Cerrado');
+    expect(compiled.textContent).toContain('20 h');
+  });
+
+  it('should link task management and history to the assignment_id of each workspace', () => {
+    workspaceServiceSpy.getMyWorkspaces.and.returnValue(of(mockWorkspaces));
+
+    fixture = TestBed.createComponent(OperationalWorkspacesComponent);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+
+    const hrefs = fixture.debugElement
+      .queryAll(By.css('a.btn'))
+      .map((link) => link.nativeElement.getAttribute('href'));
+    expect(hrefs).toEqual([
+      '/operational/workspaces/10/tasks',
+      '/operational/workspaces/10/history',
+      '/operational/workspaces/11/tasks',
+      '/operational/workspaces/11/history'
+    ]);
   });
 
   it('should render empty state component when user has no assigned workspaces', () => {

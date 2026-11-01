@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, map } from 'rxjs';
 import { AssignmentsResponse, WeeklyWorkDetail, ConsolidatedSummary } from '../models/assignment.model';
 import { environment } from '../../../environments/environment';
 
@@ -19,10 +19,14 @@ export class AssignmentService {
     if (week) {
       params = params.set('week', week);
     }
-    return this.http.get<WeeklyWorkDetail>(`${environment.apiUrl}/assignments/${assignmentId}/weekly`, { params });
+    return this.http
+      .get<{ data: WeeklyWorkDetail }>(`${environment.apiUrl}/assignments/${assignmentId}/weekly`, { params })
+      .pipe(map((res) => res.data));
   }
 
   getConsolidatedDetail(assignmentId: number): Observable<ConsolidatedSummary> {
-    return this.http.get<ConsolidatedSummary>(`${environment.apiUrl}/assignments/${assignmentId}/consolidated`);
+    return this.http
+      .get<{ data: ConsolidatedSummary }>(`${environment.apiUrl}/assignments/${assignmentId}/consolidated`)
+      .pipe(map((res) => res.data));
   }
 }

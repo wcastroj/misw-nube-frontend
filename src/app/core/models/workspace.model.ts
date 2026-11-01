@@ -16,13 +16,16 @@ export interface Workspace {
 }
 
 export interface OperationalWorkspace {
-  assignment_id: number;
-  workspace_id: number;
-  workspace_nombre: string;
-  tipo?: WorkspaceType;
-  profesor_nombre: string;
-  profesor_email?: string;
-  rol: AssignmentRole;
-  horas_semanales: number;
+  id: number;
+  tipo: WorkspaceType;
+  nombre: string;
   estado: WorkspaceStatus;
+  fechaInicio: string;
+  fechaFin: string;
+  observaciones?: string;
+  periodo: { id: number; codigo: string };
+  profesor: { nombre: string; email: string };
+  rolVinculacion: AssignmentRole;
+  horasSemanales: number;
+  assignment_id: number;
 }

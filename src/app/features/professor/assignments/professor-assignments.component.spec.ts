@@ -16,27 +16,19 @@ describe('ProfessorAssignmentsComponent', () => {
     assignments: [
       {
         id: 1,
-        persona_id: 10,
-        persona_nombre: 'Ana María Gómez',
-        persona_email: 'ana@uniandes.edu.co',
-        workspace_id: 101,
-        workspace_nombre: 'Desarrollo de Software en la Nube',
-        rol: 'GRADUATE_ASSISTANT',
+        user: { id: 10, name: 'Ana María Gómez' },
+        workspace: { id: 101, name: 'Desarrollo de Software en la Nube', type: 'COURSE' },
+        role: 'GRADUATE_ASSISTANT',
         contracted_hours: 20,
-        reported_hours: 18,
-        report_status: 'REPORTED'
+        reported_hours: 18
       },
       {
         id: 2,
-        persona_id: 11,
-        persona_nombre: 'Carlos Pérez',
-        persona_email: 'carlos@uniandes.edu.co',
-        workspace_id: 102,
-        workspace_nombre: 'Arquitecturas Ágiles',
-        rol: 'MONITOR',
+        user: { id: 11, name: 'Carlos Pérez' },
+        workspace: { id: 102, name: 'Arquitecturas Ágiles', type: 'COURSE' },
+        role: 'MONITOR',
         contracted_hours: 10,
-        reported_hours: 0,
-        report_status: 'NO_REPORT'
+        reported_hours: 0
       }
     ]
   };

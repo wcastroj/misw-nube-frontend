@@ -12,28 +12,25 @@ describe('ProfessorConsolidatedDetailComponent', () => {
   let assignmentServiceSpy: jasmine.SpyObj<AssignmentService>;
 
   const mockConsolidated: ConsolidatedSummary = {
-    assignment_id: 2,
-    persona_nombre: 'Carlos Pérez',
-    workspace_nombre: 'Arquitecturas Ágiles',
-    total_contracted_hours: 80,
-    total_reported_hours: 72,
-    compliance_percentage: 90,
-    weeks_without_report_count: 2,
+    student: { user_id: 11, user_name: 'Carlos Pérez' },
+    workspace: { workspace_id: 5, workspace_name: 'Arquitecturas Ágiles', workspace_status: 'ACTIVO' },
+    role: 'MONITOR',
+    weekly_hours: 10,
+    summary: {
+      start_week: '2026-W35',
+      end_week: '2026-W42',
+      total_weeks_evaluated: 8,
+      reported_weeks_count: 6,
+      no_report_weeks_count: 2,
+      expected_hours: 80,
+      total_hours_spent: 72,
+      total_tasks: 15,
+      hours_balance: -8,
+      compliance_percentage: 90
+    },
     weeks: [
-      {
-        week: '2026-W42',
-        contracted_hours: 10,
-        reported_hours: 10,
-        report_status: 'REPORTED',
-        task_count: 3
-      },
-      {
-        week: '2026-W41',
-        contracted_hours: 10,
-        reported_hours: 0,
-        report_status: 'NO_REPORT',
-        task_count: 0
-      }
+      { week: '2026-W42', total_hours_spent: 10, task_count: 3, status: 'REPORTED', has_late_reports: true },
+      { week: '2026-W41', total_hours_spent: 0, task_count: 0, status: 'NO_REPORT', has_late_reports: false }
     ]
   };
 
@@ -83,5 +80,7 @@ describe('ProfessorConsolidatedDetailComponent', () => {
     const dangerBadge = fixture.debugElement.query(By.css('.badge.bg-danger'));
     expect(dangerBadge).toBeTruthy();
     expect(dangerBadge.nativeElement.textContent).toContain('Sin reporte');
+
+    expect(fixture.nativeElement.textContent).toContain('Tardío');
   });
 });
