@@ -72,3 +72,7 @@ gcloud storage objects update gs://entrega-frontend-nube-1793477639/browser/inde
 ```
 
 URL: http://storage.googleapis.com/entrega-frontend-nube-1793477639/browser/index.html
+
+La app usa rutas con hash (`withHashLocation()` en `src/app/app.config.ts`) porque `storage.googleapis.com` no tiene
+fallback a `index.html`: una ruta como `.../browser/login` responde `NoSuchKey`. Los enlaces directos tienen la forma
+`.../browser/index.html#/login`, `.../browser/index.html#/professor/assignments`, etc.
