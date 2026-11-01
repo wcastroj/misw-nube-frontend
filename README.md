@@ -1,78 +1,183 @@
-# MiswNubeFrontend
+# MISW Nube Frontend
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 21.2.22.
+Aplicación frontend desarrollada con Angular para la gestión y seguimiento de actividades académicas de profesores, monitores y asistentes graduados.
 
-## Development server
+## Features principales
 
-To start a local development server, run:
+### Autenticación y control de acceso
+
+- Inicio de sesión mediante correo y contraseña.
+- Autenticación basada en token.
+- Protección de rutas mediante guards.
+- Redirección según el rol del usuario:
+  - `admin`: dashboard administrativo.
+  - `professor`: gestión y supervisión de vinculaciones.
+  - `operational`: cursos, proyectos y tareas asignadas.
+- Cierre de sesión y limpieza de la sesión local.
+- Notificaciones de errores mediante Toastr.
+
+### Módulo de administrador
+
+- Dashboard de bienvenida.
+- Visualización de la información del usuario autenticado.
+
+### Módulo de profesor
+
+- Consulta de vinculaciones con monitores y asistentes.
+- Visualización del detalle semanal de actividades.
+- Consulta consolidada del trabajo reportado.
+- Comparación entre horas contratadas y horas reportadas.
+- Identificación de reportes realizados y pendientes.
+- Generación de reportes semanales.
+- Descarga de reportes individuales en PDF.
+- Descarga de lotes de reportes en formato ZIP.
+
+### Módulo operativo
+
+- Consulta de cursos y proyectos asignados.
+- Visualización del rol y las horas contratadas.
+- Registro de tareas semanales.
+- Edición y eliminación de tareas.
+- Registro de semana en formato ISO (`YYYY-Www`).
+- Registro de título, descripción, estado, horas, observaciones y adjuntos.
+- Notificación de reportes tardíos.
+- Consulta del historial de tareas por asignación.
+
+## Tecnologías utilizadas
+
+- Angular 21
+- TypeScript
+- Bootstrap 5
+- Bootstrap Icons
+- RxJS
+- ngx-toastr
+- Angular Router
+- Angular HttpClient
+- SDD
+
+## Conexión con el backend
+
+El frontend consume una API REST mediante `HttpClient`. La URL base se configura en los archivos de entorno:
+
+- Desarrollo: `src/environments/environment.ts`
+- Producción: `src/environments/environment.prod.ts`
+
+La URL actual del backend es:
+
+```text
+http://35.254.96.36/api/v1
+```
+
+Los principales endpoints utilizados son:
+
+```text
+POST   /auth/login
+POST   /auth/logout
+
+GET    /assignments
+GET    /assignments/:id/weekly
+GET    /assignments/:id/consolidated
+
+GET    /workspaces
+
+POST   /tasks
+GET    /tasks
+PUT    /tasks/:id
+DELETE /tasks/:id
+GET    /tasks/history
+
+POST   /reports/batch
+GET    /reports
+GET    /reports/:id/download
+GET    /reports/batch/:id/download
+```
+
+Las peticiones autenticadas incluyen automáticamente la credencial de autenticación mediante un interceptor HTTP. Los errores HTTP son gestionados centralmente y reportados mediante notificaciones Toastr.
+
+## Configuración de `environment.ts`
+
+El archivo `src/environments/environment.ts` contiene la configuración utilizada durante el desarrollo local:
+
+```typescript
+export const environment = {
+  production: false,
+  apiUrl: 'http://35.254.96.36/api/v1'
+};
+```
+
+Para producción se utiliza `src/environments/environment.prod.ts`:
+
+```typescript
+export const environment = {
+  production: true,
+  apiUrl: 'http://35.254.96.36/api/v1'
+};
+```
+
+Durante el build de producción, Angular reemplaza automáticamente `environment.ts` por `environment.prod.ts`, según la configuración definida en `angular.json`.
+
+Si la URL del backend cambia, debe actualizarse en ambos archivos de entorno.
+
+## Ejecución local
+
+### Requisitos
+
+- Node.js
+- npm
+- Angular CLI, opcionalmente instalado de forma global
+
+### Instalación
+
+Clonar el repositorio e instalar las dependencias:
+
+```bash
+git clone <URL_DEL_REPOSITORIO>
+cd misw-nube-frontend
+npm install
+```
+
+### Iniciar el servidor de desarrollo
+
+```bash
+npm start
+```
+
+También se puede utilizar Angular CLI directamente:
 
 ```bash
 ng serve
 ```
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+La aplicación estará disponible en:
 
-## Code scaffolding
-
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
-
-```bash
-ng generate component component-name
+```text
+http://localhost:4200/
 ```
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+### Compilar el proyecto
+
+Para generar el build de producción:
 
 ```bash
-ng generate --help
+npm run build
 ```
 
-## Building
+Los archivos generados estarán en:
 
-To build the project run:
+```text
+dist/misw-nube-frontend/browser/
+```
+
+### Ejecutar pruebas
 
 ```bash
-ng build
+npm test
 ```
 
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
+## Aplicación desplegada
 
-## Running unit tests
+Actualmente, la aplicación se encuentra desplegada en un bucket de Google Cloud Storage.
 
-To execute unit tests with the [Vitest](https://vitest.dev/) test runner, use the following command:
+Puede acceder a la aplicación desde la siguiente URL:
 
-```bash
-ng test
-```
-
-## Running end-to-end tests
-
-For end-to-end (e2e) testing, run:
-
-```bash
-ng e2e
-```
-
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
-
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
-
-## Despliegue en GCS
-
-Sube siempre la carpeta `browser/` completa. Si falta algún archivo (por ejemplo `polyfills-*.js`, que trae zone.js), la app carga pero las vistas no se actualizan al llegar los datos.
-
-```bash
-npx ng build
-gcloud storage rsync dist/misw-nube-frontend/browser \
-  gs://entrega-frontend-nube-1793477639/browser \
-  --recursive --delete-unmatched-destination-objects
-gcloud storage objects update gs://entrega-frontend-nube-1793477639/browser/index.html \
-  --cache-control="no-cache, max-age=0"
-```
-
-URL: http://storage.googleapis.com/entrega-frontend-nube-1793477639/browser/index.html
-
-La app usa rutas con hash (`withHashLocation()` en `src/app/app.config.ts`) porque `storage.googleapis.com` no tiene
-fallback a `index.html`: una ruta como `.../browser/login` responde `NoSuchKey`. Los enlaces directos tienen la forma
-`.../browser/index.html#/login`, `.../browser/index.html#/professor/assignments`, etc.
+[http://entrega-frontend-nube-1793477639.storage.googleapis.com/browser/index.html](http://entrega-frontend-nube-1793477639.storage.googleapis.com/browser/index.html)
