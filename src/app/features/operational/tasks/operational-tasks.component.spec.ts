@@ -39,7 +39,8 @@ describe('OperationalTasksComponent', () => {
       description: 'Descripción de prueba',
       status: 'COMPLETED',
       hours_spent: 4,
-      is_late_report: false
+      is_late_report: false,
+      attachments: [{ id: 9, name: 'guia.pdf', url: 'https://example.com/guia.pdf' }]
     },
     {
       id: 2,
@@ -117,8 +118,40 @@ describe('OperationalTasksComponent', () => {
     hoursControl?.setValue('2.5');
     expect(hoursControl?.valid).toBeFalse();
 
+    hoursControl?.setValue('169');
+    expect(hoursControl?.valid).toBeFalse();
+
     hoursControl?.setValue('4');
     expect(hoursControl?.valid).toBeTrue();
+  });
+
+  it('should enforce backend length rules for title and description', () => {
+    component.taskForm.get('title')?.setValue('ab');
+    expect(component.taskForm.get('title')?.valid).toBeFalse();
+    component.taskForm.get('title')?.setValue('abc');
+    expect(component.taskForm.get('title')?.valid).toBeTrue();
+
+    component.taskForm.get('description')?.setValue('abcd');
+    expect(component.taskForm.get('description')?.valid).toBeFalse();
+    component.taskForm.get('description')?.setValue('abcde');
+    expect(component.taskForm.get('description')?.valid).toBeTrue();
+  });
+
+  it('should keep existing attachments when updating a task (PUT replaces the whole task)', () => {
+    component.editTask(mockTasks[0]);
+    component.taskForm.patchValue({ hours_spent: '6' });
+
+    component.submitTask();
+
+    expect(taskServiceSpy.updateTask).toHaveBeenCalledWith(
+      1,
+      jasmine.objectContaining({
+        hours_spent: 6,
+        status: 'COMPLETED',
+        attachments: [{ file_name: 'guia.pdf', url: 'https://example.com/guia.pdf' }]
+      })
+    );
+    expect(toastrSpy.success).toHaveBeenCalledWith('Tarea actualizada exitosamente.');
   });
 
   it('should activate late report warning when selecting a past week in the form (EARS-11.4)', () => {

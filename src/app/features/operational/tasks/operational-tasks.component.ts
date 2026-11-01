@@ -5,7 +5,7 @@ import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { ToastrService } from 'ngx-toastr';
 import { TaskService } from '../../../core/services/task.service';
 import { WorkspaceService } from '../../../core/services/workspace.service';
-import { Task, TaskStatus } from '../../../core/models/task.model';
+import { Task, TaskAttachment, TaskStatus } from '../../../core/models/task.model';
 import { OperationalWorkspace } from '../../../core/models/workspace.model';
 import { IsoWeekPipe } from '../../../shared/pipes/iso-week.pipe';
 import { TaskStatusPipe } from '../../../shared/pipes/task-status.pipe';
@@ -33,16 +33,18 @@ export class OperationalTasksComponent implements OnInit {
 
   public isEditing: boolean = false;
   public editingTaskId: number | null = null;
+  // PUT /tasks/:id replaces the whole task: attachments not sent are deleted (frontend-api.md §8.4).
+  private editingAttachments: TaskAttachment[] = [];
   public showDeleteModal: boolean = false;
   public taskToDelete: Task | null = null;
 
   public taskForm: FormGroup = this.fb.group({
     week: ['', [Validators.required]],
-    title: ['', [Validators.required]],
-    description: ['', [Validators.required]],
+    title: ['', [Validators.required, Validators.minLength(3), Validators.maxLength(150)]],
+    description: ['', [Validators.required, Validators.minLength(5), Validators.maxLength(1000)]],
     status: ['COMPLETED' as TaskStatus, [Validators.required]],
-    hours_spent: ['', [Validators.required, Validators.pattern('^[1-9][0-9]*$')]],
-    observations: ['']
+    hours_spent: ['', [Validators.required, Validators.pattern('^[1-9][0-9]*$'), Validators.max(168)]],
+    observations: ['', [Validators.maxLength(1000)]]
   });
 
   ngOnInit(): void {
@@ -114,7 +116,8 @@ export class OperationalTasksComponent implements OnInit {
         description: formValues.description,
         status: formValues.status,
         hours_spent: hours,
-        observations: formValues.observations
+        observations: formValues.observations,
+        attachments: this.editingAttachments
       }).subscribe({
         next: () => {
           this.toastr.success('Tarea actualizada exitosamente.');
@@ -151,6 +154,10 @@ export class OperationalTasksComponent implements OnInit {
 
     this.isEditing = true;
     this.editingTaskId = task.id;
+    this.editingAttachments = (task.attachments || []).map((a) => ({
+      file_name: a.file_name || a.name,
+      url: a.url
+    }));
     this.taskForm.patchValue({
       week: task.week,
       title: task.title,
@@ -193,6 +200,7 @@ export class OperationalTasksComponent implements OnInit {
   resetForm(): void {
     this.isEditing = false;
     this.editingTaskId = null;
+    this.editingAttachments = [];
     this.taskForm.reset({
       week: this.currentIsoWeek,
       title: '',

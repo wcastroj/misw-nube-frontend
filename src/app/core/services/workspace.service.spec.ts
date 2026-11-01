@@ -43,7 +43,8 @@ describe('WorkspaceService', () => {
         periodo: { id: 1, codigo: '2026-02' },
         profesor: { nombre: 'Profesor Carlos', email: 'carlos@uniandes.edu.co' },
         rolVinculacion: 'GRADUATE_ASSISTANT',
-        horasSemanales: 20
+        horasSemanales: 20,
+        assignment_id: 10
       }
     ];
 

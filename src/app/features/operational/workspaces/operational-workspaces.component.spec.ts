@@ -22,7 +22,8 @@ describe('OperationalWorkspacesComponent', () => {
       periodo: { id: 1, codigo: '2026-02' },
       profesor: { nombre: 'Profesor Carlos', email: 'carlos@uniandes.edu.co' },
       rolVinculacion: 'GRADUATE_ASSISTANT',
-      horasSemanales: 20
+      horasSemanales: 20,
+      assignment_id: 10
     },
     {
       id: 102,
@@ -73,19 +74,22 @@ describe('OperationalWorkspacesComponent', () => {
     expect(compiled.textContent).toContain('20 h');
   });
 
-  it('should disable task actions when the backend does not expose assignment_id', () => {
+  it('should link task management and history to the assignment_id of each workspace', () => {
     workspaceServiceSpy.getMyWorkspaces.and.returnValue(of(mockWorkspaces));
 
     fixture = TestBed.createComponent(OperationalWorkspacesComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
 
-    const disabledButtons = fixture.debugElement.queryAll(By.css('button[disabled]'));
-    expect(disabledButtons.length).toBe(2);
-
-    const links = fixture.debugElement.queryAll(By.css('a.btn'));
-    expect(links.length).toBe(2);
-    expect(links[0].nativeElement.getAttribute('href')).toContain('/operational/workspaces/11/tasks');
+    const hrefs = fixture.debugElement
+      .queryAll(By.css('a.btn'))
+      .map((link) => link.nativeElement.getAttribute('href'));
+    expect(hrefs).toEqual([
+      '/operational/workspaces/10/tasks',
+      '/operational/workspaces/10/history',
+      '/operational/workspaces/11/tasks',
+      '/operational/workspaces/11/history'
+    ]);
   });
 
   it('should render empty state component when user has no assigned workspaces', () => {

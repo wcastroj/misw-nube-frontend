@@ -27,6 +27,5 @@ export interface OperationalWorkspace {
   profesor: { nombre: string; email: string };
   rolVinculacion: AssignmentRole;
   horasSemanales: number;
-  // Not exposed by the backend yet (frontend-api.md §6.2); used when present.
-  assignment_id?: number;
+  assignment_id: number;
 }
