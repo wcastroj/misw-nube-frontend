@@ -1,4 +1,4 @@
 export const environment = {
   production: false,
-  apiUrl: 'http://35.254.96.36/api/v1'
+  apiUrl: 'https://misw-api-848682643028.us-central1.run.app/api/v1'
 };
